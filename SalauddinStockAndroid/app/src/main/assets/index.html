@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#123b63"><title>Salauddin Enterprises Stock</title>
+<style>
+:root{--navy:#123b63;--blue:#1d5d91;--bg:#f3f6fa;--card:#fff;--ink:#172638;--muted:#64748b;--line:#dce4ee;--red:#c0392b;--green:#16845b;--amber:#a96800}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px system-ui,-apple-system,"Segoe UI",sans-serif}
+header{background:linear-gradient(120deg,var(--navy),#1d5d91);color:#fff;padding:20px 16px 18px;position:sticky;top:0;z-index:4;box-shadow:0 3px 14px #102c4930}
+.head{max-width:900px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:12px}
+h1{font-size:20px;margin:0;font-weight:800}header p{margin:3px 0 0;color:#d7e8f7;font-size:12px}
+.wrap{max-width:900px;margin:auto;padding:16px 14px 90px}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:0 0 14px}
+.stat,.panel,.item{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:0 2px 8px #19385808}
+.stat small{color:var(--muted);display:block}.stat b{font-size:23px;display:block;margin-top:3px}
+.stat .money{font-size:19px}
+.actions{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin:12px 0}
+button{border:0;border-radius:10px;padding:11px 13px;font:inherit;font-weight:700;cursor:pointer}
+.primary{background:var(--blue);color:white}.soft{background:#e7eff8;color:var(--navy)}.danger{background:#fff0ef;color:var(--red)}.green{background:#e6f6ef;color:var(--green)}
+.section-title{font-size:16px;font-weight:800;margin:18px 2px 9px}
+input,select{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);font:inherit;margin:4px 0 10px}
+label{font-size:12px;color:var(--muted);font-weight:700}
+.search{margin:0 0 10px}
+.item{display:flex;gap:10px;align-items:center;margin-bottom:9px}
+.item-main{flex:1;min-width:0}.item-name{font-weight:800;overflow-wrap:anywhere}.meta{font-size:12px;color:var(--muted)}
+.price{font-weight:800;color:var(--navy);white-space:nowrap}
+.qty{font-size:12px;font-weight:800;padding:5px 8px;border-radius:20px;background:#e8f5ee;color:var(--green);display:inline-block;margin-top:5px}
+.qty.low{background:#fff1dc;color:var(--amber)}
+.item-buttons{display:flex;flex-direction:column;gap:5px}.item-buttons button{font-size:12px;padding:7px 9px}
+.panel{margin-top:12px}.hidden{display:none!important}.empty{text-align:center;color:var(--muted);padding:24px}
+dialog{width:min(440px,94vw);border:0;border-radius:16px;padding:18px;box-shadow:0 18px 60px #0004}
+dialog::backdrop{background:#10253d88}dialog h2{margin:0 0 12px;font-size:18px}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.formgrid .full{grid-column:1/-1}
+.dlg-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:10px}
+.tabs{display:flex;gap:8px;overflow:auto;margin:12px 0}.tabs button{white-space:nowrap}
+.note{font-size:12px;color:var(--muted);line-height:1.5}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#172638;color:#fff;padding:10px 15px;border-radius:10px;display:none;z-index:10}
+@media(min-width:650px){.stats{grid-template-columns:repeat(4,1fr)}.actions{grid-template-columns:repeat(4,1fr)}}
+@media print{header,.actions,.tabs,.search,.item-buttons,.no-print{display:none!important}body{background:#fff}.wrap{padding:0}.item,.stat{box-shadow:none;break-inside:avoid}}
+</style></head>
+<body>
+<header><div class="head"><div><h1>SALAUDDIN ENTERPRISES</h1><p>Laboratory Chemical &amp; Scientific Equipment · Stock Manager</p></div><button class="soft" id="backupTop">Backup</button></div></header>
+<main class="wrap">
+<div class="stats">
+ <div class="stat"><small>Total Items</small><b id="totalItems">0</b></div>
+ <div class="stat"><small>Total Units in Stock</small><b id="totalQty">0</b></div>
+ <div class="stat"><small>Stock Value</small><b class="money" id="stockValue">₹0</b></div>
+ <div class="stat"><small>Low Stock Items</small><b id="lowCount">0</b></div>
+</div>
+<div class="actions">
+ <button class="primary" id="addBtn">＋ Add Item</button>
+ <button class="green" id="inBtn">↑ Stock In</button>
+ <button class="soft" id="outBtn">↓ Stock Out</button>
+ <button class="soft" id="reportBtn">▤ Export Report</button>
+</div>
+<div class="tabs">
+ <button class="primary" id="allTab">All Items</button>
+ <button class="soft" id="lowTab">Low Stock</button>
+ <button class="soft" id="historyTab">Movement History</button>
+</div>
+<input class="search" id="search" placeholder="Search item or company..." autocomplete="off">
+<div id="itemsView"></div>
+<section id="historyView" class="hidden"></section>
+<section class="panel"><b>Data &amp; Backup</b><p class="note">Your data is stored on this device. Export a backup regularly and keep a copy somewhere safe. Restoring a backup replaces the current app data.</p>
+<div class="actions"><button class="soft" id="backupBtn">Download Backup</button><button class="soft" id="restoreBtn">Restore Backup</button><input id="restoreFile" type="file" accept="application/json,.json" class="hidden"></div></section>
+<div class="panel note">Salauddin (Proprietor) · Mobile: 9431459852 · New Bazar, Sherghati, Gayaji</div>
+</main>
+<dialog id="itemDialog"><form id="itemForm"><h2 id="itemTitle">Add Item</h2><div class="formgrid">
+<div class="full"><label>Item Name *</label><input id="name" required placeholder="e.g. Sulphuric Acid 500ml"></div>
+<div class="full"><label>Company Name *</label><input id="company" required placeholder="e.g. Merck"></div>
+<div><label>Unit Price (₹) *</label><input id="price" type="number" min="0" step=".01" required></div>
+<div><label>Opening Stock *</label><input id="qty" type="number" min="0" step="1" required value="0"></div>
+<div><label>Low Stock Alert At</label><input id="minQty" type="number" min="0" step="1" value="5"></div>
+</div><p id="itemError" class="note"></p><div class="dlg-actions"><button type="button" class="soft" data-close="itemDialog">Cancel</button><button class="primary">Save Item</button></div></form></dialog>
+<dialog id="moveDialog"><form id="moveForm"><h2 id="moveTitle">Stock In</h2><label>Choose Item</label><select id="moveItem" required></select><div id="currentStock" class="note"></div><label>Quantity</label><input id="moveQty" type="number" min="1" step="1" required placeholder="Enter quantity"><label>Note (optional)</label><input id="moveNote" placeholder="Purchase / Sale / Usage"><div class="dlg-actions"><button type="button" class="soft" data-close="moveDialog">Cancel</button><button class="primary">Save</button></div></form></dialog>
+<div id="toast"></div>
+<script>
+(()=>{
+const KEY='salauddin_stock_v2';let items=[],moves=[],editId=null,moveType='in',view='all';
+const $=id=>document.getElementById(id), money=n=>'₹'+Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2});
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function save(){localStorage.setItem(KEY,JSON.stringify({items,moves}));}
+function load(){try{let d=JSON.parse(localStorage.getItem(KEY)||'null');if(d&&Array.isArray(d.items)){items=d.items;moves=Array.isArray(d.moves)?d.moves:[];return}}catch(e){}items=[
+{id:uid(),name:'Sulphuric Acid 500ml',company:'Merck',price:420,qty:10,minQty:2},
+{id:uid(),name:'Test Tube (Borosil)',company:'Borosil',price:12.5,qty:50,minQty:10},
+{id:uid(),name:'Beaker 250ml',company:'Borosil',price:95,qty:20,minQty:5}
+];moves=[];save();}
+function toast(s){$('toast').textContent=s;$('toast').style.display='block';setTimeout(()=>$('toast').style.display='none',2000)}
+function dashboard(){$('totalItems').textContent=items.length;$('totalQty').textContent=items.reduce((a,x)=>a+Number(x.qty),0);$('stockValue').textContent=money(items.reduce((a,x)=>a+Number(x.qty)*Number(x.price),0));$('lowCount').textContent=items.filter(x=>Number(x.qty)<=Number(x.minQty)).length}
+function render(){
+ dashboard();$('itemsView').classList.toggle('hidden',view==='history');$('historyView').classList.toggle('hidden',view!=='history');
+ $('allTab').className=view==='all'?'primary':'soft';$('lowTab').className=view==='low'?'primary':'soft';$('historyTab').className=view==='history'?'primary':'soft';
+ if(view==='history'){renderHistory();return}
+ let q=$('search').value.trim().toLowerCase();let arr=items.filter(x=>(view!=='low'||Number(x.qty)<=Number(x.minQty))&&(!q||(x.name+' '+x.company).toLowerCase().includes(q))).sort((a,b)=>a.name.localeCompare(b.name));
+ $('itemsView').innerHTML=arr.length?arr.map(x=>`<article class="item"><div class="item-main"><div class="item-name">${esc(x.name)}</div><div class="meta">${esc(x.company)} · ${money(x.price)} / unit</div><span class="qty ${Number(x.qty)<=Number(x.minQty)?'low':''}">${Number(x.qty)<=Number(x.minQty)?'LOW · ':''}Stock: ${x.qty}</span></div><div class="price">${money(Number(x.qty)*Number(x.price))}</div><div class="item-buttons"><button class="soft" data-move="in" data-id="${x.id}">+ In</button><button class="soft" data-move="out" data-id="${x.id}">− Out</button><button class="soft" data-edit="${x.id}">Edit</button><button class="danger" data-delete="${x.id}">Delete</button></div></article>`).join(''):'<div class="empty">No items found. Add your first stock item.</div>';
+}
+function renderHistory(){let arr=moves.slice().reverse();$('historyView').innerHTML='<div class="section-title">Stock Movement History</div>'+(arr.length?arr.map(m=>`<article class="item"><div class="item-main"><b>${esc(m.name)}</b><div class="meta">${new Date(m.date).toLocaleString()} · ${esc(m.note||'No note')}</div></div><b style="color:${m.type==='in'?'#16845b':'#c0392b'}">${m.type==='in'?'+':'−'}${m.qty}</b></article>`).join(''):'<div class="empty">No stock movements recorded yet.</div>')}
+function openItem(id){editId=id||null;let x=items.find(a=>a.id===id);$('itemTitle').textContent=x?'Edit Item':'Add Item';$('name').value=x?.name||'';$('company').value=x?.company||'';$('price').value=x?.price??'';$('qty').value=x?.qty??0;$('minQty').value=x?.minQty??5;$('itemError').textContent='';$('itemDialog').showModal()}
+function openMove(type,id){moveType=type;$('moveTitle').textContent=type==='in'?'Stock In':'Stock Out';$('moveItem').innerHTML=items.map(x=>`<option value="${x.id}" ${x.id===id?'selected':''}>${esc(x.name)} (${x.qty} available)</option>`).join('');$('moveQty').value='';$('moveNote').value='';updateCurrent();$('moveDialog').showModal()}
+function updateCurrent(){let x=items.find(a=>a.id===$('moveItem').value);$('currentStock').textContent=x?`Current stock: ${x.qty} units`:''}
+function csvExport(){let rows=[['Item','Company','Unit Price','Quantity','Low Stock At','Stock Value'],...items.map(x=>[x.name,x.company,x.price,x.qty,x.minQty,x.price*x.qty])];let csv=rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');download(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),'Salauddin-Stock-Report.csv')}
+function download(blob,name){let u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
+function backup(){download(new Blob([JSON.stringify({app:'Salauddin Enterprises Stock',version:2,exportedAt:new Date().toISOString(),items,moves},null,2)],{type:'application/json'}),'Salauddin-Stock-Backup.json');toast('Backup downloaded')}
+function pdf(){let rows=items.map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(x.company)}</td><td>${money(x.price)}</td><td>${x.qty}</td><td>${money(x.price*x.qty)}</td></tr>`).join('');let w=window.open('','_blank');if(!w){toast('Allow pop-ups to create PDF');return}w.document.write(`<html><head><title>Stock Report</title><style>body{font:14px Arial;padding:24px}h2{color:#123b63}table{width:100%;border-collapse:collapse}th,td{border:1px solid #bbb;padding:8px;text-align:left}th{background:#eaf0f6}</style></head><body><h2>SALAUDDIN ENTERPRISES</h2><p>Stock Report · ${new Date().toLocaleString()}</p><table><tr><th>Item</th><th>Company</th><th>Price</th><th>Qty</th><th>Value</th></tr>${rows}</table><p>Total stock value: ${money(items.reduce((a,x)=>a+x.price*x.qty,0))}</p><script>window.onload=()=>window.print()<\/script></body></html>`);w.document.close()}
+$('addBtn').onclick=()=>openItem();$('inBtn').onclick=()=>items.length?openMove('in'):toast('Add an item first');$('outBtn').onclick=()=>items.length?openMove('out'):toast('Add an item first');
+$('reportBtn').onclick=()=>{if(confirm('OK = Excel/CSV report. Cancel = PDF/Print report.'))csvExport();else pdf()};
+$('backupTop').onclick=backup;$('backupBtn').onclick=backup;$('restoreBtn').onclick=()=>$('restoreFile').click();
+$('restoreFile').onchange=async e=>{let f=e.target.files[0];if(!f)return;try{let d=JSON.parse(await f.text());if(!Array.isArray(d.items))throw Error();if(confirm('Restore backup? Current data will be replaced.')){items=d.items;moves=Array.isArray(d.moves)?d.moves:[];save();render();toast('Backup restored')}}catch(err){alert('Invalid backup file')}e.target.value=''};
+$('allTab').onclick=()=>{view='all';render()};$('lowTab').onclick=()=>{view='low';render()};$('historyTab').onclick=()=>{view='history';render()};$('search').oninput=render;
+$('itemsView').onclick=e=>{let b=e.target.closest('button');if(!b)return;let id=b.dataset.id||b.dataset.edit||b.dataset.delete;if(b.dataset.move)openMove(b.dataset.move,id);if(b.dataset.edit)openItem(id);if(b.dataset.delete){let x=items.find(a=>a.id===id);if(confirm(`Delete ${x.name}?`)){items=items.filter(a=>a.id!==id);save();render();toast('Item deleted')}}};
+$('moveItem').onchange=updateCurrent;
+$('itemForm').onsubmit=e=>{e.preventDefault();let x={name:$('name').value.trim(),company:$('company').value.trim(),price:Number($('price').value),qty:Number($('qty').value),minQty:Number($('minQty').value||0)};if(!x.name||!x.company||x.price<0||x.qty<0)return $('itemError').textContent='Please enter valid item details.';if(editId){let old=items.find(a=>a.id===editId);Object.assign(old,x)}else{let n={id:uid(),...x};items.push(n);if(x.qty)moves.push({id:uid(),itemId:n.id,name:n.name,type:'in',qty:x.qty,note:'Opening stock',date:new Date().toISOString()})}save();$('itemDialog').close();render();toast('Item saved')};
+$('moveForm').onsubmit=e=>{e.preventDefault();let x=items.find(a=>a.id===$('moveItem').value),q=Number($('moveQty').value);if(!x||!Number.isInteger(q)||q<1)return;if(moveType==='out'&&q>x.qty)return alert('Not enough stock available.');x.qty+=moveType==='in'?q:-q;moves.push({id:uid(),itemId:x.id,name:x.name,type:moveType,qty:q,note:$('moveNote').value.trim(),date:new Date().toISOString()});save();$('moveDialog').close();render();toast('Stock updated')};
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).close());
+load();render();
+})();
+</script></body></html>
